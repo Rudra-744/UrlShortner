@@ -1,37 +1,50 @@
 import React, { useState } from "react";
 import bgImg from "../assets/images/bg.jpg";
 import { loginUser } from "../api/user.api";
+import { useSelector } from "react-redux";
+import { login } from "../store/slice/authSlice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "@tanstack/react-router";
 
-export default function LoginForm({state}) {
-  const [email, setEmail] = useState("rudra@gmail.com");
-  const [password, setPassword] = useState("password1251");
+export default function LoginForm({ state }) {
+  const [email, setEmail] = useState("rg@gmail.com");
+  const [password, setPassword] = useState("123456");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const auth = useSelector(state=>state.auth);
 
-
-  const handleSubmit = async () => {
-    setLoading(true);
+  const handleSubmit = async () => {  
+    setLoading(true);                         
     setError("");
+
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
-    }
+    }   
     setError("");
-    try {
-       await loginUser(email, password);
-       setLoading(false);
-       console.log("signin success")
-       
+
+
+    try { 
+      const data = await loginUser(email, password);
+      dispatch(login(data.user));
+      
+      // Use router.navigate for TanStack Router v5+
+      await navigate({ to: '/dashboard' });
+      
+      setLoading(false);
+      console.log("Sign in successful");
     } catch (error) {
       setLoading(false);
       console.error("Login error:", error);
-      setError(error.message || 'Login failed. Please check your credentials.');
+      setError(error.message || "Login failed. Please check your credentials.");
     }
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-white font-poppins">
+    <div className="h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-2 bg-white font-poppins">
       {/* Left Panel */}
       <div className="relative flex flex-col items-center justify-center bg-indigo-500 text-white p-10">
         <img
@@ -41,16 +54,15 @@ export default function LoginForm({state}) {
         />
         <h2 className="text-3xl font-bold mb-2">Shorten Smarter</h2>
         <p className="text-lg text-white/90 max-w-sm text-center">
-          Manage, track, and simplify your links in one place. Make sharing effortless.
+          Manage, track, and simplify your links in one place. Make sharing
+          effortless.
         </p>
       </div>
 
       {/* Right Panel - Login Form */}
       <div className="flex items-center justify-center px-4 sm:px-8 lg:px-16 py-10">
-        <div
-          className="bg-white shadow-xl rounded-3xl px-8 py-10 w-full max-w-md relative"
-        >
-          <div >
+        <div className="bg-white shadow-xl rounded-3xl px-8 py-10 w-full max-w-md relative">
+          <div>
             <div className="text-3xl font-bold text-indigo-500 mb-8 text-center">
               Welcome Back 👋
             </div>
@@ -108,11 +120,17 @@ export default function LoginForm({state}) {
               </button>
 
               <div className="flex justify-between mt-4 text-sm text-indigo-400">
-                <span>
-                  Forgot Password?
-                </span>
-                <span onClick={() => state(false)} style={{cursor: "pointer"}}>
-                  <span className="text-zinc-500 font-semibold">Don't have an account?</span> <span className="text-indigo-500 font-semibold underline">Register</span>
+                <span>Forgot Password?</span>
+                <span
+                  onClick={() => state(false)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <span className="text-zinc-500 font-semibold">
+                    Don't have an account?
+                  </span>{" "}
+                  <span className="text-indigo-500 font-semibold underline">
+                    Register
+                  </span>
                 </span>
               </div>
             </div>

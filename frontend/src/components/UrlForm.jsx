@@ -1,22 +1,35 @@
 import React from "react";
 import { useState } from "react";
 import { createShortUrl } from "../api/shortUrl.api";
+import Navbar from "./Navbar";
+import { useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 
 const UrlForm = () => {
-  const [url, setUrl] = useState('https://www.google.com');
+  const [url, setUrl] = useState('');
   const [shortUrl, setShortUrl] = useState();
   const [copied, setCopied] = useState(false);
+  const [customSlug, setCustomSlug] = useState('');
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
-
-  const handleSubmit  = async ()=>{
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const shortUrl = await createShortUrl(url) 
-      setShortUrl(shortUrl);
+      const result = await createShortUrl(url, customSlug);
+      setShortUrl(result);
+      // Invalidate the 'urls' query to refetch the list
+      await queryClient.invalidateQueries({ queryKey: ['urls'] });
+      setError(null);
+      // Clear the form
+      setCustomSlug('');
     } catch (error) {
       console.error('Error:', error);
+      setError(error.response?.data?.message || error.message || 'Something went wrong');
     }
   }
- 
+
   const handleCopy = () => {
     navigator.clipboard.writeText(shortUrl);
     setCopied(true);
@@ -85,8 +98,8 @@ const UrlForm = () => {
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
               {error}
             </div>
-          )} */}
-          {/* {isAuthenticated && (
+          )}
+          {isAuthenticated && (
             <div className="mt-4">
               <label htmlFor="customSlug" className="block text-sm font-medium text-gray-700 mb-1">
                 Custom URL (optional)
@@ -101,6 +114,25 @@ const UrlForm = () => {
               />
             </div>
           )}  */}
+
+          {isAuthenticated && (
+            <div className="mt-4">
+              <label htmlFor="customSlug" className="block text-sm font-medium text-gray-700 mb-1">
+                Custom URL (optional)
+              </label>
+              <input
+                type="text"
+                id="customSlug"
+                value={customSlug}
+                onChange={(event) => setCustomSlug(event.target.value)}
+                placeholder="example"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          
+            
+          
           {shortUrl && (
             <div className="mt-8 p-6 bg-gradient-to-br from-green-50/80 to-emerald-50/80 rounded-2xl border border-green-200/50 backdrop-blur-sm">
               <div className="flex items-center mb-4">

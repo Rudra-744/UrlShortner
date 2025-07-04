@@ -1,4 +1,4 @@
-import { findUserByEmail, createUser } from "../dao/user.dao.js";
+import { findUserByEmail, createUser  } from "../dao/user.dao.js";
 import { ConflictError, NotFoundError, UnauthorizedError } from "../utils/errorHandler.js";
 import { signToken } from "../utils/helper.js";
 import bcrypt from "bcrypt";        
@@ -13,12 +13,21 @@ export const registerUser = async (name, email, password) => {
 }
 
 export const loginUser = async (email, password) => {
-    const user = await findUserByEmail(email);
-    if (!user) throw new NotFoundError("User not found");
+    try {
+        const user = await findUserByEmail(email);
+        if (!user) throw new NotFoundError("Invalid emails or password");
 
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatched) throw new UnauthorizedError("Invalid email or password");
+        const isPasswordMatched = await user.comparePassword(password);
+        if (!isPasswordMatched) throw new UnauthorizedError("Invalid email or passwords");
 
-    const token = signToken({ id: user._id });
-    return { token, user };
+        
+        const token = signToken({ id: user.id });
+        // Remove password before sending user object
+        const userObj = user.toObject();
+        delete userObj.password;
+        return { token, user: userObj };
+    } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+    }
 }

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import bgImg from "../assets/images/bg.jpg";
 import { registerUser } from "../api/user.api";
+import { useDispatch } from "react-redux";
+import { login } from "../store/slice/authSlice";
+import { useNavigate } from "@tanstack/react-router";
 
 export default function RegisterForm({state}) {
   const [name, setName] = useState("");
@@ -11,10 +14,13 @@ export default function RegisterForm({state}) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError("");b
+    setError("");
     setSuccess("");
 
     if (!name || !email || !password) {
@@ -30,8 +36,10 @@ export default function RegisterForm({state}) {
     setError("");
     setSuccess("");
     try {
-      await registerUser(name, email, password);
+      const data = await registerUser(name, email, password);
       setLoading(false);
+      dispatch(login(data.user));
+      navigate({to:"/dashboard"})
 
     } catch (error) {
       console.error("Register error:", error); 
@@ -41,7 +49,7 @@ export default function RegisterForm({state}) {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-white font-poppins">
+    <div className="h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-2 bg-white font-poppins">
       {/* Left Panel */}
       <div className="relative flex flex-col items-center justify-center bg-indigo-500 text-white p-10">
         <img

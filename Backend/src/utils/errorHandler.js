@@ -1,5 +1,12 @@
 
 export const errorHandler = (err,req,res,next) => {
+
+  if (res.headersSent) {
+    return next(err); 
+  }
+
+
+
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
         success: false,
@@ -13,7 +20,7 @@ export const errorHandler = (err,req,res,next) => {
     });
   };
   
-  export class AppError extends Error {
+export class AppError extends Error {
       statusCode;
       isOperational;
     

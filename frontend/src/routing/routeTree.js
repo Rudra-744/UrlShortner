@@ -6,7 +6,7 @@ import RootLayout from "../RootLayout"
 
 
 export const rootRoute = createRootRoute({
-    Component: RootLayout
+    component: RootLayout
 })
 export const routeTree = rootRoute.addChildren([
     homePageRoute,
