@@ -1,6 +1,9 @@
 import React from "react";
+import { Link } from "@tanstack/react-router";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   return (
     <nav className="backdrop-blur-md bg-white/30 shadow-md sticky top-0 z-50">
       <div className="max-w-full px-15 py-3 flex justify-between items-center">
@@ -27,12 +30,17 @@ const Navbar = () => {
           </span>
         </div>
 
-        {/* Right Side Button */}
-        <div>
-          {/* <button className="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-medium shadow hover:scale-105 transition-transform duration-200">
-            Login
-          </button> */}
-        </div>
+        {/* Right Side Button - Only show when not authenticated */}
+        {!isAuthenticated && (
+          <div>
+            <Link 
+              to="/auth"
+              className="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-medium shadow hover:scale-105 transition-transform duration-200 inline-block"
+            >
+              Login
+            </Link>
+          </div>
+        )}
       </div>
     </nav>
   );

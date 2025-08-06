@@ -4,6 +4,7 @@ import { createShortUrl } from "../api/shortUrl.api";
 import Navbar from "./Navbar";
 import { useSelector } from "react-redux";
 import { useQueryClient } from "@tanstack/react-query";
+import { APP_CONFIG } from "../config";
 
 const UrlForm = () => {
   const [url, setUrl] = useState('');
@@ -19,10 +20,8 @@ const UrlForm = () => {
     try {
       const result = await createShortUrl(url, customSlug);
       setShortUrl(result);
-      // Invalidate the 'urls' query to refetch the list
       await queryClient.invalidateQueries({ queryKey: ['urls'] });
       setError(null);
-      // Clear the form
       setCustomSlug('');
     } catch (error) {
       console.error('Error:', error);
@@ -31,6 +30,7 @@ const UrlForm = () => {
   }
 
   const handleCopy = () => {
+    // Copy the full URL to clipboard
     navigator.clipboard.writeText(shortUrl);
     setCopied(true);
     
@@ -39,15 +39,21 @@ const UrlForm = () => {
       setCopied(false);
     }, 2000);
   }
+  
+  // Extract just the slug part from the full URL for display
+  const displayShortUrl = shortUrl ? shortUrl.split('/').pop() : '';
+  
+  // Format the display URL with https://linkify/
+  const displayFullUrl = shortUrl ? `${APP_CONFIG.BASE_URL}/${displayShortUrl}` : '';
 
   
   
 
   return ( 
     <>
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg border border-white/20 shadow-2xl">
+      <div className="bg-white/90 mt-10 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg border border-white/20 shadow-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 ">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -94,26 +100,6 @@ const UrlForm = () => {
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
           </button>
-           {/* {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
-          {isAuthenticated && (
-            <div className="mt-4">
-              <label htmlFor="customSlug" className="block text-sm font-medium text-gray-700 mb-1">
-                Custom URL (optional)
-              </label>
-              <input
-                type="text"
-                id="customSlug"
-                value={customSlug}
-                onChange={(event) => setCustomSlug(event.target.value)}
-                placeholder="Enter custom slug"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}  */}
 
           {isAuthenticated && (
             <div className="mt-4">
@@ -144,12 +130,9 @@ const UrlForm = () => {
                 <h2 className="text-lg font-semibold text-gray-800">Your shortened URL:</h2>
               </div>
               <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  readOnly
-                  value={shortUrl}
-                  className="flex-1 p-3 bg-white/70 border-2 border-green-200/50 rounded-xl text-sm font-mono text-gray-700 focus:outline-none"
-                />
+                <div className="flex-1 p-3 bg-white/70 border-2 border-green-200/50 rounded-xl text-sm font-mono text-gray-700 focus:outline-none flex items-center">
+                  <span className="font-bold">{displayFullUrl}</span>
+                </div>
                  <button
                   onClick={handleCopy}
                   className={`px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
